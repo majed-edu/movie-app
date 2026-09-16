@@ -17,18 +17,21 @@ const API_OPTIONS = {
 };
 
 function App() {
-  const [searchItem, setSearchItem] = useState(""); // State to store the search input
+  const [searchTerm, setSearchTerm] = useState(""); // State to store the search input
   const [errorMessage, setErrorMessage] = useState(""); // State to store error messages
   const [movieList, setMovieList] = useState([]); // State to store the list of movies
   const [isloading, setisLoading] = useState(false); // State to track loading status
 
-  const fetchMovies = async () => {
+  const fetchMovies = async (query = '') => {
     setisLoading(true); // set loading state to true before fetching
     setErrorMessage(""); // Clear previous error message before fetching
 
     try {
       // endpoint to fetch popular movies from the TMDB API
-      const endpoint = `${BASE_API_URL}/discover/movie?sort_by=popularity.desc`;
+      // const endpoint = `${BASE_API_URL}/discover/movie?sort_by=popularity.desc`;
+      const endpoint = query
+        ? `${BASE_API_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${BASE_API_URL}/discover/movie?sort_by=popularity.desc`;
       // fetch data from the TMDB API using the endpoint and API options
       const response = await fetch(endpoint, API_OPTIONS);
 
@@ -58,8 +61,8 @@ function App() {
 
   useEffect(() => {
     // useEffect hook to fetch movies when the component mounts
-    fetchMovies();
-  }, []);
+    fetchMovies(searchTerm);
+  }, [searchTerm]);
 
   return (
     <main>
@@ -71,7 +74,7 @@ function App() {
             Find <span className="text-gradient">Gr1eat Movies</span> You'll
             Enjoy Without the Hassle
           </h1>
-          <Search searchItem={searchItem} setSearchItem={setSearchItem} />
+          <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </header>
 
         <section className="all-movies">
