@@ -1,8 +1,9 @@
 // import React from "react";
 import Search from "./components/Search";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Spinner from "./components/Spinner";
 import MovieCard from "./components/MovieCard";
+import { useDebounce } from "react-use";
 
 const BASE_API_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -21,8 +22,20 @@ function App() {
   const [errorMessage, setErrorMessage] = useState(""); // State to store error messages
   const [movieList, setMovieList] = useState([]); // State to store the list of movies
   const [isloading, setisLoading] = useState(false); // State to track loading status
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); // State to store the debounced search term
 
-  const fetchMovies = async (query = '') => {
+
+   // Debounce the search term to avoid making API calls on every keystroke
+   // by waiting for a specified delay (500ms) after the user stops typing before updating the debounced search term
+  // useDebounce(fn () => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
+  // useDebounce(() => {
+  //   (setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
+  // });
+  useDebounce(function () {
+    setDebouncedSearchTerm(searchTerm);
+  }, 500, [searchTerm]);
+
+  const fetchMovies = async (query = "") => {
     setisLoading(true); // set loading state to true before fetching
     setErrorMessage(""); // Clear previous error message before fetching
 
@@ -61,8 +74,8 @@ function App() {
 
   useEffect(() => {
     // useEffect hook to fetch movies when the component mounts
-    fetchMovies(searchTerm);
-  }, [searchTerm]);
+    fetchMovies(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
   return (
     <main>
@@ -71,7 +84,7 @@ function App() {
         <header>
           <img src="./hero.png" alt="Hero Banner" />
           <h1>
-            Find <span className="text-gradient">Gr1eat Movies</span> You'll
+            Find <span className="text-gradient">Movies</span> You'll
             Enjoy Without the Hassle
           </h1>
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
