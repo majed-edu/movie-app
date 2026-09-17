@@ -11,26 +11,21 @@ const client = new Client()
 
 const database = new Databases(client);
 
+// تحديث عداد البحث للفيلم في قاعدة البيانات أو إنشاؤه إذا لم يكن موجوداً
 export const updateSearchCount = async (searchTerm, movie) => {
-    // 1. التحقق من وجود القيمة لمنع الاستعلامات الفارغة
     if (!searchTerm || !movie) return;
 
     try {
-        // 2. البحث عن كلمة البحث فقط في قاعدة البيانات
         const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
-            Query.equal('searchTerm', searchTerm)
+            Query.equal('movie_id', movie.id)
         ]);
 
-        // 3. إذا كانت الكلمة موجودة مسبقاً -> زيادة العداد count بمقدار 1
         if (result.documents.length > 0) {
             const doc = result.documents[0];
-
             await database.updateDocument(DATABASE_ID, COLLECTION_ID, doc.$id, {
                 count: doc.count + 1,
             });
-        } 
-        // 4. إذا لم تكن موجودة -> إنشاء سجل جديد بالحقول المعرفة فقط
-        else {
+        } else {
             await database.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), {
                 searchTerm,
                 count: 1,
@@ -40,5 +35,18 @@ export const updateSearchCount = async (searchTerm, movie) => {
         }
     } catch (error) {
         console.error('Error occurred while updating search count:', error);
+    }
+};
+
+// جلب أعلا 5 أفلام بحثاً من قاعدة البيانات
+export const getTrendingMovies = async () => {
+    try {
+        const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
+            Query.limit(5),
+            Query.orderDesc('count')
+        ]);
+        return result.documents;
+    } catch (error) {
+        console.error('Error occurred while fetching trending movies:', error);
     }
 };
