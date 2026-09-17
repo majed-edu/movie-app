@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Spinner from "./components/Spinner";
 import MovieCard from "./components/MovieCard";
 import { useDebounce } from "react-use";
+import { updateSearchCount } from "./appwrite";
 
 const BASE_API_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -62,6 +63,12 @@ function App() {
         return; // Exit the function early if there was an error in the API response
       }
       setMovieList(data.results || []); // Update the movie list state with the fetched data or an empty array if no results
+      
+      if(query && data.results.length > 0) {
+        // If there is a search query and results, update the search count in the database
+        await updateSearchCount(query, data.results[0]);
+      }
+
     } catch (error) {
       // Catch any errors that occur during the fetch operation
       console.error("Error fetching movies"); // Log the error to the console for debugging purposes
